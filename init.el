@@ -42,6 +42,35 @@
     (auto-package-update-maybe)
     (auto-package-update-at-time "19:30"))
 
+(use-package diminish)
+
+(use-package undo-tree) ;; for redos in evil mode
+(use-package evil
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-i-jump nil)
+  (setq evil-split-window-below t)
+  (setq evil-vsplit-window-right t)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
+
+(use-package evil-collection
+  :after evil
+  :config (evil-collection-init))
+
+(use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+
+(use-package general)
+
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+
 (setq inhibit-startup-message t)
 (setq initial-scratch-message nil)
 
@@ -53,7 +82,7 @@
 
 (set-face-attribute 'default nil :font "Menlo" :height 123)
 
-(use-package doom-themes :init (load-theme 'doom-one t)
+(use-package doom-themes :init (load-theme 'doom-one t))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
@@ -100,8 +129,6 @@
 (use-package all-the-icons-dired 
   :commands (dired dired-jump)
   :hook (dired-mode . all-the-icons-dired-mode))
-
-(use-package diminish) ;; Hide minor modes
 
 (defun cstm/org-mode ()
     (org-indent-mode)
@@ -177,8 +204,9 @@
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
-  :bind (:map company-active-map ("<tab>" . company-complete-selection))
-  (:map map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
+  :bind 
+  (:map company-active-map ("<tab>" . company-complete-selection))
+  (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
@@ -216,33 +244,6 @@
 (use-package counsel-projectile 
   :after projectile
   :config (counsel-projectile-mode))
-
-(use-package undo-tree) ;; for redos in evil mode
-(use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-i-jump nil)
-  (setq evil-split-window-below t)
-  (setq evil-vsplit-window-right t)
-  :config
-  (evil-mode 1)
-  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
-  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-  (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
-
-(use-package evil-collection
-  :after evil
-  :config (evil-collection-init))
-
-(use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
-
-(use-package general)
-
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)

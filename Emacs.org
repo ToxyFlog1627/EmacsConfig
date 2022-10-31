@@ -59,6 +59,44 @@ Setting theme to dark, until package with other themes loads no to get blind.
       (auto-package-update-maybe)
       (auto-package-update-at-time "19:30"))
 #+end_src
+** Miscallenious
+#+begin_src emacs-lisp
+  (use-package diminish)
+#+end_src
+* Keybinding
+** EVIL
+#+begin_src emacs-lisp
+  (use-package undo-tree) ;; for redos in evil mode
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-i-jump nil)
+    (setq evil-split-window-below t)
+    (setq evil-vsplit-window-right t)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal))
+
+  (use-package evil-collection
+    :after evil
+    :config (evil-collection-init))
+
+  (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+#+end_src
+** General (better keybinding definitions)
+#+begin_src emacs-lisp
+  (use-package general)
+#+end_src
+** Custom Keybindings
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+#+end_src
 * User Interface
 ** Startup Page
 #+begin_src emacs-lisp
@@ -80,7 +118,7 @@ Setting theme to dark, until package with other themes loads no to get blind.
 ** Theme
 Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
 #+begin_src emacs-lisp
-  (use-package doom-themes :init (load-theme 'doom-one t)
+  (use-package doom-themes :init (load-theme 'doom-one t))
 #+end_src
 ** Status bar / Mode line
 #+begin_src emacs-lisp
@@ -138,10 +176,6 @@ Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
   (use-package all-the-icons-dired 
     :commands (dired dired-jump)
     :hook (dired-mode . all-the-icons-dired-mode))
-#+end_src
-** Miscallenious
-#+begin_src emacs-lisp
-  (use-package diminish) ;; Hide minor modes
 #+end_src
 * Org Mode
 ** Org Config
@@ -230,8 +264,9 @@ Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
   (use-package company
     :after lsp-mode
     :hook (lsp-mode . company-mode)
-    :bind (:map company-active-map ("<tab>" . company-complete-selection))
-    (:map map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
+    :bind 
+    (:map company-active-map ("<tab>" . company-complete-selection))
+    (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
     :custom
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
@@ -281,40 +316,6 @@ Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
   (use-package counsel-projectile 
     :after projectile
     :config (counsel-projectile-mode))
-#+end_src
-* Keybinding
-** EVIL
-#+begin_src emacs-lisp
-  (use-package undo-tree) ;; for redos in evil mode
-  (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-i-jump nil)
-    (setq evil-split-window-below t)
-    (setq evil-vsplit-window-right t)
-    :config
-    (evil-mode 1)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
-
-  (use-package evil-collection
-    :after evil
-    :config (evil-collection-init))
-
-  (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
-#+end_src
-** General (better keybinding definitions)
-#+begin_src emacs-lisp
-  (use-package general)
-#+end_src
-** Custom Keybindings
-#+begin_src emacs-lisp
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
 #+end_src
 * Help
 ** Helpful (detailed "describe" commands)
