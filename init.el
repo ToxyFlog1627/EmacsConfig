@@ -1,11 +1,20 @@
-;; Temp theme to avoid blinding light
+;; Increase memory size to 50MB to decrease startup time
+(setq gc-cons-threshold (* 50 1024 1024))
+
 (load-theme 'wombat)
 
-;; Startup settings
-(setq inhibit-startup-message t)
-(setq initial-scratch-message nil)
+(prefer-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
 
-;; Use tabs for indentation
+;; Don't create temp lock files
+(setq create-lockfiles nil)
+
+;; Not sure
+(setq-default electric-indent-mode nil)
+
+;; Use tabs instead of spaces
 (setq indent-tabs-mode t)
 
 ;; Disable shitty bell
@@ -13,77 +22,97 @@
 
 ;; Initialize package sources
 (require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/") ("org" . "https://orgmode.org/elpa/") ("elpa" . "https://elpa.gnu.org/packages/")))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/") 
+                         ("org" . "https://orgmode.org/elpa/") 
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
 (package-initialize)
 (unless package-archive-contents (package-refresh-contents))
 
 ;; Initilize use-package on non-Linux
-(unless (package-installed-p 'use-package) 
-	(package-install 'use-package))
+(unless (package-installed-p 'use-package) (package-install 'use-package))
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;; Changing view
+(use-package auto-package-update
+    :custom
+    (auto-package-update-interval 7)
+    (auto-package-update-prompt-before-update nil)
+    (auto-package-update-hide-results t)
+    :config
+    (auto-package-update-maybe)
+    (auto-package-update-at-time "19:30"))
+
+(setq inhibit-startup-message t)
+(setq initial-scratch-message nil)
+
 (scroll-bar-mode -1) ; Disable scrollbar
 (tool-bar-mode   -1) ; Disable toolbar
 (tooltip-mode    -1) ; Disable tooltip
 (menu-bar-mode   -1) ; Diasble menubar
 (set-fringe-mode  8) ; Padding
 
-;; Font
 (set-face-attribute 'default nil :font "Menlo" :height 123)
 
-;; Themes
-(use-package doom-themes
-    :init (load-theme 'doom-one t)) ;; doom-one doom-moonlight doom-snazzy doom-spacegray
+(use-package doom-themes :init (load-theme 'doom-one t)
 
-;; Counsel
+(use-package doom-modeline
+  :init (doom-modeline-mode 1)
+  :custom ((doom-modeline-height 5)))
+
+(use-package all-the-icons)
+
 (use-package counsel
-    :bind (
-        ("M-x" . counsel-M-x)
-        ("C-x b" . counsel-ibuffer))
-        ("C-x C-f" . counsel-find-file)
-    :config (setq ivy-initial-inputs-alist nil))
+  :bind (("M-x" . counsel-M-x)
+         ("C-x b" . counsel-ibuffer)
+         ("C-x C-f" . counsel-find-file))
+  :config 
+  (setq ivy-initial-inputs-alist nil)
+  (global-set-key (kbd "C-M-j") 'counsel-switch-buffer))
 
-(global-set-key (kbd "C-M-j") 'counsel-switch-buffer)
-
-;; Ivy
-(use-package ivy-rich
-    :init (ivy-rich-mode 1))
+(use-package ivy-rich :init (ivy-rich-mode 1))
 (use-package ivy
   :diminish
-  :bind (("C-s" . swiper) ;; better search
+  :bind (("C-s" . swiper)
          :map ivy-minibuffer-map
          ("TAB" . ivy-alt-done)	
-        ;;  ("C-l" . ivy-alt-done)
          ("C-j" . ivy-next-line)
          ("C-k" . ivy-previous-line)
          :map ivy-switch-buffer-map
          ("C-k" . ivy-previous-line)
-        ;;  ("C-l" . ivy-done)
          ("C-d" . ivy-switch-buffer-kill)
          :map ivy-reverse-i-search-map
-        ;;  ("C-d" . ivy-reverse-i-search-kill)
          ("C-k" . ivy-previous-line))
   :config (ivy-mode 1))
 
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
 
-;; Packages
-(use-package general)
-(use-package magit) ;; Git gui
+(use-package dired-single 
+  :commands (dired dired-jump))
+
+(use-package all-the-icons-dired 
+  :commands (dired dired-jump)
+  :hook (dired-mode . all-the-icons-dired-mode))
+
 (use-package diminish) ;; Hide minor modes
-(use-package all-the-icons) ;; init with "all-the-icons-install-fonts"
 
-;; Org
 (defun cstm/org-mode ()
     (org-indent-mode)
     (visual-line-mode 1))
 
 (use-package org
+    :pin org
+    :commands (org-capture)
     :hook (org-mode . cstm/org-mode)
     :config 
-    (setq org-ellipsis ""
-          org-hide-emphasis-markers t
+    (setq org-hide-emphasis-markers t
           org-confirm-babel-evaluate nil)
     (dolist (face '(
         (org-level-1 . 1.2)
@@ -94,132 +123,142 @@
         (org-level-6 . 1.0)
         (org-level-7 . 1.0)
         (org-level-8 . 1.0)))
-        (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face))))
+        (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face)))
+    (dolist (template '(
+        ("sh" . "src shell")
+        ("el" . "src emacs-lisp")))
+        (add-to-list 'org-structure-template-alist template)))
 
 (use-package org-bullets
      :hook (org-mode . org-bullets-mode)
      :custom (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun cstm/org-mode-visual-fill ()
-    (setq visual-fill-column-width 100
+    (setq visual-fill-column-width 120
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
 (use-package visual-fill-column
     :hook (org-mode . cstm/org-mode-visual-fill))
 
-(org-babel-do-load-languages
-    'org-babel-load-languages
-    '((emacs-lisp . t)
-      (shell . t)
-      (javascript . t)))
+(with-eval-after-load 'org
+    (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+        (shell . t))))
 
-(use-package org-tempo
-    :init 
-    (dolist (template '(
-        ("sh" . "src shell")
-        ("el" . "src emacs-lisp")
-        ("js" . "src javascript")))
-        (add-to-list 'org-structure-template-alist template)))
+(defun cstm/org-babel-tangle-config ()
+  (when (string-equal (file-name-directory (buffer-file-name)) (expand-file-name user-emacs-directory))
+    (let ((org-confirm-babel-evaluate nil)) (org-babel-tangle))))
 
-;; Mode line / Status bar
-(use-package doom-modeline
-  :init (doom-modeline-mode 1)
-  :custom ((doom-modeline-height 5)))
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cstm/org-babel-tangle-config)))
 
-;; Better help commands
-(use-package helpful
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
-    :bind
-    ([remap describe-function] . counsel-describe-function)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-variable] . counsel-describe-variable)
-    ([remap describe-key] . helpful-key))
+(defun cstm/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
 
-;; ESC to cancel operation
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . cstm/lsp-mode-setup)
+  :init (setq lsp-keymap-prefix "C-c l")
+  :config (lsp-enable-which-key-integration t))
 
-;; Line numbers
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-ivy :after lsp)
+
+(use-package typescript-mode
+  :mode "\\.tsx?\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config (setq typescript-indent-level 4))
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map ("<tab>" . company-complete-selection))
+  (:map map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package company-box :hook (company-mode . company-box-mode))
+
+(use-package magit :commands magit-status)
+
+(use-package exec-path-from-shell
+    :config (exec-path-from-shell-initialize))
+(use-package flycheck
+    :config (global-flycheck-mode))
+
+(use-package vterm
+    :commands vterm
+    :config 
+    (setq vterm-shell "zsh")
+    (setq vterm-max-scrollback 5000))
+
+(use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
+
 (global-display-line-numbers-mode t)
-(dolist 
-    (mode '(org-mode-hook term-mode-hook eshell-mode-hook shell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+(dolist (mode '(org-mode-hook term-mode-hook eshell-mode-hook shell-mode-hook git-commit-mode-hook))
+  (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;; Rainbow parantheses
-(use-package rainbow-delimiters 
-    :hook (prog-mode . rainbow-delimiters-mode))
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :init
+  (when (file-directory-p "~/Documents/") (setq projectile-project-search-path '("~/Documents/")))
+  (setq projectile-switch-project-action #'projectile-dired))
 
-;; Keybind suggestions
-(use-package which-key
-    :init (which-key-mode)
-    :diminish which-key-mode
-    :config (setq which-key-idle-delay 0.3))
+(use-package counsel-projectile 
+  :after projectile
+  :config (counsel-projectile-mode))
 
-;; Evil
+(use-package undo-tree) ;; for redos in evil mode
 (use-package evil
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-i-jump nil)
-    (setq evil-split-window-below t)
-    (setq evil-vsplit-window-right t)
-    :config
-    (evil-mode 1)
-
-    (define-key evil-insert-state-map (kbd "j j") 'evil-normal-state)
-    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
-
-    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-    
-    (evil-set-initial-state 'messages-buffer-mode 'normal)
-    (evil-set-initial-state 'dashboard-mode 'normal))
+  :init
+  (setq evil-want-integration t)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-i-jump nil)
+  (setq evil-split-window-below t)
+  (setq evil-vsplit-window-right t)
+  :config
+  (evil-mode 1)
+  (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
+  (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+  (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+  (evil-set-initial-state 'messages-buffer-mode 'normal)
+  (evil-set-initial-state 'dashboard-mode 'normal))
 
 (use-package evil-collection
-    :after evil
-    :config (evil-collection-init))
+  :after evil
+  :config (evil-collection-init))
 
-;; Projectile
-(use-package projectile
-    :diminish projectile-mode
-    :config (projectile-mode)
-    :custom ((projectile-completion-system 'ivy))
-    :bind-keymap 
-    ("C-c p" . projectile-command-map)
-    :init
-    (when (file-directory-p "~/Documents/") (setq projectile-project-search-path '("~/Documents/")))
-    (setq projectile-switch-project-action #'projectile-dired))
+(use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-(use-package counsel-projectile
-    :config (counsel-projectile-mode))
+(use-package general)
 
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
 
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-command helpful-key)
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . counsel-describe-function)
+  ([remap describe-command] . helpful-command)
+  ([remap describe-variable] . counsel-describe-variable)
+  ([remap describe-key] . helpful-key))
 
+(use-package which-key
+  :init (which-key-mode)
+  :diminish which-key-mode
+  :config (setq which-key-idle-delay 0.3))
 
-
-
-
-
-
-
-
-
-;; !Autoadded
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(which-key rainbow-delimiters doom-modeline counsel diminish use-package))
- '(warning-suppress-log-types '((comp) (comp)))
- '(warning-suppress-types '((comp))))
+;; Decrease memory to 2MB
+(setq gc-cons-threshold (* 2 1024 1024))
