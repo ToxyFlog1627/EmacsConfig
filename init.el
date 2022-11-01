@@ -1,5 +1,5 @@
-;; Increase memory size to 50MB to decrease startup time
-(setq gc-cons-threshold (* 50 1024 1024))
+;; Increase memory size to 75MB to decrease startup time
+(setq gc-cons-threshold (* 75 1024 1024))
 
 (load-theme 'wombat)
 
@@ -20,8 +20,8 @@
 ;; Disable shitty bell
 (setq ring-bell-function 'ignore)
 
-;; Fix warnings on mac
 (when (eq system-type 'darwin) (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
+(setq byte-compile-warnings '(cl-functions))
 
 ;; Initialize package sources
 (require 'package)
@@ -46,6 +46,10 @@
     (auto-package-update-at-time "19:30"))
 
 (use-package diminish)
+
+(use-package no-littering
+  :custom (setq auto-save-file-name-transforms 
+                `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
 
 (use-package evil
   :init
@@ -201,14 +205,6 @@
 
 (use-package lsp-ivy :after lsp)
 
-(use-package web-mode
-  :mode "\\.[tj]sx?$")
-
-(use-package typescript-mode
-  :mode "\\.tsx?\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config (setq typescript-indent-level 4))
-
 (use-package company
   :after lsp-mode
   :hook (lsp-mode . company-mode)
@@ -223,10 +219,33 @@
 
 (use-package magit :commands magit-status)
 
-(use-package exec-path-from-shell
-    :config (exec-path-from-shell-initialize))
-(use-package flycheck
-    :config (global-flycheck-mode))
+(use-package web-mode 
+    :mode "\\.[tj]sx?$"
+    :config
+  (setq web-mode-markup-indent-offset 4)
+  (setq web-mode-code-indent-offset 4)
+  (setq web-mode-css-indent-offset 4))
+
+(use-package emmet-mode 
+  :config 
+  (add-hook 'web-mode-hook 'emmet-mode)
+  (add-hook 'web-mode-hook #'(lambda () (setq-local emmet-expand-jsx-className? t))))
+
+(use-package rjsx-mode :config (add-hook 'web-mode-hook 'rjsx-mode))
+
+(use-package typescript-mode
+  :mode "\\.tsx?\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config (setq typescript-indent-level 4))
+
+(use-package exec-path-from-shell :config (exec-path-from-shell-initialize))
+(use-package flycheck :config (global-flycheck-mode))
+
+(setq-default flycheck-disabled-checkers (append flycheck-disabled-checkers '(javascript-jshint json-jsonlist)))
+
+(flycheck-add-mode 'javascript-eslint 'web-mode)
+
+(use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
 
 (use-package vterm
     :commands vterm
