@@ -44,7 +44,6 @@
 
 (use-package diminish)
 
-(use-package undo-tree) ;; for redos in evil mode
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -53,6 +52,7 @@
   (setq evil-want-C-i-jump nil)
   (setq evil-split-window-below t)
   (setq evil-vsplit-window-right t)
+  (setq evil-undo-system 'undo-redo)
   :config
   (evil-mode 1)
   (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
@@ -70,6 +70,8 @@
 (use-package general)
 
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+
+(custom-set-variables '(initial-frame-alist (quote ((fullscreen . maximized)))))
 
 (setq inhibit-startup-message t)
 (setq initial-scratch-message nil)
