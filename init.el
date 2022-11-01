@@ -20,6 +20,9 @@
 ;; Disable shitty bell
 (setq ring-bell-function 'ignore)
 
+;; Fix warnings on mac
+(when (eq system-type 'darwin) (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
+
 ;; Initialize package sources
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/") 
@@ -197,6 +200,9 @@
   :custom (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-ivy :after lsp)
+
+(use-package web-mode
+  :mode "\\.[tj]sx?$")
 
 (use-package typescript-mode
   :mode "\\.tsx?\\'"
