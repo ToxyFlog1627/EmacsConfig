@@ -1,5 +1,9 @@
 #title Emacs Configuration
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+* Config
+#+begin_src emacs-lisp
+  (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
+#+end_src
 * OnStartup 
 #+begin_src emacs-lisp
   ;; Increase memory size to 75MB to decrease startup time
@@ -187,7 +191,9 @@ Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
 
   (use-package dired-single 
     :commands (dired dired-jump))
-
+#+end_src
+Icons in dired
+#+begin_src emacs-lisp
   (use-package all-the-icons-dired 
     :commands (dired dired-jump)
     :hook (dired-mode . all-the-icons-dired-mode))
@@ -354,19 +360,25 @@ To use config from local node_modules
 #+begin_src emacs-lisp
   (use-package projectile
     :diminish projectile-mode
-    :config (projectile-mode)
+    :config 
+    (projectile-mode)
+    (setq projectile-enable-caching t)
     :custom ((projectile-completion-system 'ivy))
     :bind-keymap ("C-c p" . projectile-command-map)
     :init
-    (when (file-directory-p "~/Documents/") (setq projectile-project-search-path '("~/Documents/")))
-    (setq projectile-switch-project-action #'projectile-dired))
+    (when (file-directory-p "~/Documents/") 
+      (setq paths '())
+      (dolist (dir cstm/project-dirs)
+        (setq paths (append paths (cddr (remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
+      (setq projectile-project-search-path paths)
+    (setq projectile-switch-project-action #'projectile-dired)))
 
   (use-package counsel-projectile 
     :after projectile
     :config (counsel-projectile-mode))
 #+end_src
 * Help
-** Helpful (detailed "describe" commands)
+** Helpful
 #+begin_src emacs-lisp
   (use-package helpful
     :commands (helpful-callable helpful-variable helpful-command helpful-key)

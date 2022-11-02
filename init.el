@@ -1,3 +1,5 @@
+(setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
+
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
@@ -261,12 +263,18 @@
 
 (use-package projectile
   :diminish projectile-mode
-  :config (projectile-mode)
+  :config 
+  (projectile-mode)
+  (setq projectile-enable-caching t)
   :custom ((projectile-completion-system 'ivy))
   :bind-keymap ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/Documents/") (setq projectile-project-search-path '("~/Documents/")))
-  (setq projectile-switch-project-action #'projectile-dired))
+  (when (file-directory-p "~/Documents/") 
+    (setq paths '())
+    (dolist (dir cstm/project-dirs)
+      (setq paths (append paths (cddr (remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
+    (setq projectile-project-search-path paths)
+  (setq projectile-switch-project-action #'projectile-dired)))
 
 (use-package counsel-projectile 
   :after projectile
