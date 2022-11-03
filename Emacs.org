@@ -183,18 +183,20 @@ Other good themes: /doom-one, /doom-moonlight,/ /doom-snazzy,/ /doom-spacegray/
 #+end_src
 ** Dired (file management)
 #+begin_src emacs-lisp
-  (use-package dired
-    :ensure nil
-    :commands (dired dired-jump)
-    :bind (("C-x C-j" . dired-jump))
-    :custom ((dired-listing-switches "-agho --group-directories-first"))
-    :config
-    (evil-collection-define-key 'normal 'dired-mode-map
-      "h" 'dired-single-up-directory
-      "l" 'dired-single-buffer))
+    (use-package dired
+      :ensure nil
+      :commands (dired dired-jump)
+      :bind (("C-x C-j" . dired-jump))
+      :custom
+      ((dired-listing-switches "-alh --group-directories-first")
+       (insert-directory-program "gls" dired-use-ls-dired))
+      :config
+      (evil-collection-define-key 'normal 'dired-mode-map
+        "h" 'dired-single-up-directory
+        "l" 'dired-single-buffer))
 
-  (use-package dired-single 
-    :commands (dired dired-jump))
+    (use-package dired-single 
+      :commands (dired dired-jump))
 #+end_src
 Icons in dired
 #+begin_src emacs-lisp

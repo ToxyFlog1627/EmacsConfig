@@ -129,7 +129,9 @@
   :ensure nil
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :custom
+  ((dired-listing-switches "-alh --group-directories-first")
+   (insert-directory-program "gls" dired-use-ls-dired))
   :config
   (evil-collection-define-key 'normal 'dired-mode-map
     "h" 'dired-single-up-directory
