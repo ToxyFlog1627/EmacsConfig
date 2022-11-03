@@ -13,11 +13,10 @@
 ;; Don't create temp lock files
 (setq create-lockfiles nil)
 
-;; Not sure
-(setq-default electric-indent-mode nil)
-
 ;; Use tabs instead of spaces
-(setq indent-tabs-mode t)
+(setq-default indent-tabs-mode t)
+(setq-default tab-width 4)
+(setq-default default-tab-width 4)
 
 ;; Disable shitty bell
 (setq ring-bell-function 'ignore)
@@ -52,6 +51,8 @@
 (use-package no-littering
   :custom (setq auto-save-file-name-transforms 
                 `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
+
+(setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
 (use-package evil
   :init
@@ -181,7 +182,7 @@
 
 (with-eval-after-load 'org
     (org-babel-do-load-languages
-        'org-babel-load-languages
+     'org-babel-load-languages
         '((emacs-lisp . t)
         (shell . t))))
 
@@ -191,21 +192,28 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cstm/org-babel-tangle-config)))
 
-(defun cstm/lsp-mode-setup ()
-  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
-  (lsp-headerline-breadcrumb-mode))
-
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :hook (lsp-mode . cstm/lsp-mode-setup)
   :init (setq lsp-keymap-prefix "C-c l")
-  :config (lsp-enable-which-key-integration t))
+  :custom
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-links nil)
+  (lsp-enable-which-key-integration t)
+  (lsp-origami-mode t)
+  (lsp-headerline-breadcrumb-enable nil))
+
+(use-package lsp-origami :after lsp)
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
   :custom (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-ivy :after lsp)
+
+(use-package origami
+  :bind (:map origami-mode-map
+              ("C-c @ C-c" . origami-toggle-node)
+              ("C-c @ C-l" . origami-recursively-toggle-node)))
 
 (use-package company
   :after lsp-mode
@@ -221,12 +229,7 @@
 
 (use-package magit :commands magit-status)
 
-(use-package web-mode 
-    :mode "\\.[tj]sx?$"
-    :config
-  (setq web-mode-markup-indent-offset 4)
-  (setq web-mode-code-indent-offset 4)
-  (setq web-mode-css-indent-offset 4))
+(use-package web-mode :mode "\\.[tj]sx?$")
 
 (use-package emmet-mode 
   :config 
@@ -235,10 +238,15 @@
 
 (use-package rjsx-mode :config (add-hook 'web-mode-hook 'rjsx-mode))
 
+(use-package json-mode
+  :ensure t
+  :mode "\\.json\\'"
+  :interpreter "json"
+  :custom (js-indent-level 2))
+
 (use-package typescript-mode
   :mode "\\.tsx?\\'"
-  :hook (typescript-mode . lsp-deferred)
-  :config (setq typescript-indent-level 4))
+  :hook (typescript-mode . lsp-deferred))
 
 (use-package exec-path-from-shell :config (exec-path-from-shell-initialize))
 (use-package flycheck :config (global-flycheck-mode))
@@ -248,6 +256,24 @@
 (flycheck-add-mode 'javascript-eslint 'web-mode)
 
 (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
+
+(use-package prettier-js
+  :custom
+  (prettier-js-args '(
+                      "--bracket-same-line" "false"
+                      "--allow-parens" "avoid"
+                      "--bracket-spacing" "false"
+                      "--use-tabs" "true"
+                      "--semi" "true"
+                      "--single-quote" "false"
+                      "--jsx-single-quote" "false"
+                      "--trailing-comma" "es5"
+                      "--tab-width" "1"
+                      "--print-width" "180"
+                      ))
+  :config
+  (add-hook 'web-mode-hook #'(lambda ()
+                               (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
 
 (use-package vterm
     :commands vterm
