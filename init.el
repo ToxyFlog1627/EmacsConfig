@@ -1,5 +1,10 @@
 (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
+(setq cstm/theme 'doom-one) ;; Other good themes: doom-moonlight, doom-snazzy, doom-spacegray
+
+(setq cstm/font-face "Menlo")
+(setq cstm/font-size 123)
+
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
@@ -10,10 +15,6 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
-;; Don't create temp lock files
-(setq create-lockfiles nil)
-
-;; Use tabs instead of spaces
 (setq-default indent-tabs-mode t)
 (setq-default tab-width 4)
 (setq-default default-tab-width 4)
@@ -54,6 +55,10 @@
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
+(setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
+
+(setq-default create-lockfiles nil)
+
 (use-package evil
   :init
   (setq evil-want-integration t)
@@ -92,9 +97,9 @@
 (menu-bar-mode   -1) ; Diasble menubar
 (set-fringe-mode  8) ; Padding
 
-(set-face-attribute 'default nil :font "Menlo" :height 123)
+(set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
 
-(use-package doom-themes :init (load-theme 'doom-one t))
+(use-package doom-themes :init (load-theme cstm/theme t))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
@@ -194,36 +199,15 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cstm/org-babel-tangle-config)))
 
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :init (setq lsp-keymap-prefix "C-c l")
-  :custom
-  (lsp-enable-file-watchers nil)
-  (lsp-enable-links nil)
-  (lsp-enable-which-key-integration t)
-  (lsp-origami-mode t)
-  (lsp-headerline-breadcrumb-enable nil))
-
-(use-package lsp-origami :after lsp)
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom (lsp-ui-doc-position 'bottom))
-
-(use-package lsp-ivy :after lsp)
-
-(use-package origami
-  :bind (:map origami-mode-map
-              ("C-c @ C-c" . origami-toggle-node)
-              ("C-c @ C-l" . origami-recursively-toggle-node)))
+(use-package origami) ;; TODO: bindings
 
 (use-package company
-  :after lsp-mode
-  :hook (lsp-mode . company-mode)
+  :after tide-mode
+  :hook (tide-mode . company-mode)
   :bind 
   (:map company-active-map ("<tab>" . company-complete-selection))
-  (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
   :custom
+  (company-tooltip-align-annotations t)
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
 
@@ -231,51 +215,15 @@
 
 (use-package magit :commands magit-status)
 
-(use-package web-mode :mode "\\.[tj]sx?$")
-
-(use-package emmet-mode 
-  :config 
-  (add-hook 'web-mode-hook 'emmet-mode)
-  (add-hook 'web-mode-hook #'(lambda () (setq-local emmet-expand-jsx-className? t))))
-
-(use-package rjsx-mode :config (add-hook 'web-mode-hook 'rjsx-mode))
-
-(use-package json-mode
-  :ensure t
-  :mode "\\.json\\'"
-  :interpreter "json"
-  :custom (js-indent-level 2))
-
-(use-package typescript-mode
-  :mode "\\.tsx?\\'"
-  :hook (typescript-mode . lsp-deferred))
-
 (use-package exec-path-from-shell :config (exec-path-from-shell-initialize))
 (use-package flycheck :config (global-flycheck-mode))
 
 (setq-default flycheck-disabled-checkers (append flycheck-disabled-checkers '(javascript-jshint json-jsonlist)))
 
 (flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'typescript-tslint 'web-mode)
 
 (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
-
-(use-package prettier-js
-  :custom
-  (prettier-js-args '(
-                      "--bracket-same-line" "false"
-                      "--allow-parens" "avoid"
-                      "--bracket-spacing" "false"
-                      "--use-tabs" "true"
-                      "--semi" "true"
-                      "--single-quote" "false"
-                      "--jsx-single-quote" "false"
-                      "--trailing-comma" "es5"
-                      "--tab-width" "1"
-                      "--print-width" "180"
-                      ))
-  :config
-  (add-hook 'web-mode-hook #'(lambda ()
-                               (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
 
 (use-package vterm
     :commands vterm
@@ -289,6 +237,7 @@
 (dolist (mode '(org-mode-hook term-mode-hook eshell-mode-hook shell-mode-hook git-commit-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+(use-package cl-lib)
 (use-package projectile
   :diminish projectile-mode
   :config 
@@ -300,13 +249,66 @@
   (when (file-directory-p "~/Documents/") 
     (setq paths '())
     (dolist (dir cstm/project-dirs)
-      (setq paths (append paths (cddr (remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
+      (setq paths (append paths (cddr (cl-remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
     (setq projectile-project-search-path paths)
   (setq projectile-switch-project-action #'projectile-dired)))
 
 (use-package counsel-projectile 
   :after projectile
   :config (counsel-projectile-mode))
+
+(use-package web-mode :mode "\\.[tj]sx?$")
+
+(use-package emmet-mode 
+  :hook
+  (web-mode . emmet-mode)
+  (web-mode . (lambda () (setq-local emmet-expand-jsx-className? t))))
+
+(use-package rjsx-mode :hook (web-mode . rjsx-mode))
+
+(use-package json-mode
+  :ensure t
+  :mode "\\.json\\'"
+  :interpreter "json")
+
+(defun cstm/setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (tide-hl-identifier-mode +1))
+
+(use-package tide
+  :hook
+  ((before-save . tide-format-before-save)
+   (web-mode . cstm/setup-tide-mode))
+  :custom
+  (tide-user-preferences '(
+                         :includeCompletionsForModuleExports t
+                         :includeCompletionsWithInsertText t
+                         :quotePreference "single"))
+  (tide-format-options '(
+                         :indentSize 4
+                         :tabSize 4
+                         :insertSpaceAfterCommaDelimiter t
+                         :insertSpaceAfterSemicolonInForStatements nil
+                         :insertSpaceBeforeAndAfterBinaryOperators t
+                         :insertSpaceAfterConstructor t
+                         :insertSpaceAfterKeywordsInControlFlowStatements t
+                         :insertSpaceAfterFunctionKeywordForAnonymousFunctions t
+                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis nil
+                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets nil
+                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces t
+                         :insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces nil
+                         :insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces nil
+                         :insertSpaceAfterTypeAssertion nil
+                         :insertSpaceBeforeFunctionParenthesis t
+                         :placeOpenBraceOnNewLineForFunctions nil
+                         :placeOpenBraceOnNewLineForControlBlocks nil
+                         :insertSpaceBeforeTypeAnnotation t)))
+
+(use-package typescript-mode
+  :mode "\\.tsx?$"
+  :hook (typescript-mode . cstm/setup-tide-mode))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
