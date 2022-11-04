@@ -1,5 +1,10 @@
 (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
+(setq cstm/theme 'doom-one) ;; Other good themes: doom-moonlight, doom-snazzy, doom-spacegray
+
+(setq cstm/font-face "Menlo")
+(setq cstm/font-size 123)
+
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
@@ -10,10 +15,6 @@
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 
-;; Don't create temp lock files
-(setq create-lockfiles nil)
-
-;; Use tabs instead of spaces
 (setq-default indent-tabs-mode t)
 (setq-default tab-width 4)
 (setq-default default-tab-width 4)
@@ -50,9 +51,13 @@
 
 (use-package no-littering
   :custom (setq auto-save-file-name-transforms 
-                `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
+                 `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
+
+(setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
+
+(setq-default create-lockfiles nil)
 
 (use-package evil
   :init
@@ -92,9 +97,9 @@
 (menu-bar-mode   -1) ; Diasble menubar
 (set-fringe-mode  8) ; Padding
 
-(set-face-attribute 'default nil :font "Menlo" :height 123)
+(set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
 
-(use-package doom-themes :init (load-theme 'doom-one t))
+(use-package doom-themes :init (load-theme cstm/theme t))
 
 (use-package doom-modeline
   :init (doom-modeline-mode 1)
@@ -194,28 +199,7 @@
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'cstm/org-babel-tangle-config)))
 
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :init (setq lsp-keymap-prefix "C-c l")
-  :custom
-  (lsp-enable-file-watchers nil)
-  (lsp-enable-links nil)
-  (lsp-enable-which-key-integration t)
-  (lsp-origami-mode t)
-  (lsp-headerline-breadcrumb-enable nil))
-
-(use-package lsp-origami :after lsp)
-
-(use-package lsp-ui
-  :hook (lsp-mode . lsp-ui-mode)
-  :custom (lsp-ui-doc-position 'bottom))
-
-(use-package lsp-ivy :after lsp)
-
-(use-package origami
-  :bind (:map origami-mode-map
-              ("C-c @ C-c" . origami-toggle-node)
-              ("C-c @ C-l" . origami-recursively-toggle-node)))
+(use-package origami) ;; TODO: bindings
 
 (use-package company
   :after lsp-mode
@@ -230,25 +214,6 @@
 (use-package company-box :hook (company-mode . company-box-mode))
 
 (use-package magit :commands magit-status)
-
-(use-package web-mode :mode "\\.[tj]sx?$")
-
-(use-package emmet-mode 
-  :config 
-  (add-hook 'web-mode-hook 'emmet-mode)
-  (add-hook 'web-mode-hook #'(lambda () (setq-local emmet-expand-jsx-className? t))))
-
-(use-package rjsx-mode :config (add-hook 'web-mode-hook 'rjsx-mode))
-
-(use-package json-mode
-  :ensure t
-  :mode "\\.json\\'"
-  :interpreter "json"
-  :custom (js-indent-level 2))
-
-(use-package typescript-mode
-  :mode "\\.tsx?\\'"
-  :hook (typescript-mode . lsp-deferred))
 
 (use-package exec-path-from-shell :config (exec-path-from-shell-initialize))
 (use-package flycheck :config (global-flycheck-mode))
@@ -289,6 +254,7 @@
 (dolist (mode '(org-mode-hook term-mode-hook eshell-mode-hook shell-mode-hook git-commit-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
+(use-package cl-lib)
 (use-package projectile
   :diminish projectile-mode
   :config 
@@ -300,13 +266,52 @@
   (when (file-directory-p "~/Documents/") 
     (setq paths '())
     (dolist (dir cstm/project-dirs)
-      (setq paths (append paths (cddr (remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
+      (setq paths (append paths (cddr (cl-remove-if (lambda (el) (or (not (file-directory-p el)) (member el '("." ".." ".DS_STORE")))) (directory-files dir))))))
     (setq projectile-project-search-path paths)
   (setq projectile-switch-project-action #'projectile-dired)))
 
 (use-package counsel-projectile 
   :after projectile
   :config (counsel-projectile-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init (setq lsp-keymap-prefix "C-c l")
+  :custom
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-links nil)
+  (lsp-idle-delay 0.1)
+  (lsp-log-io nil)
+  (lsp-completion-provider :none)
+  (lsp-enable-which-key-integration t)
+  (lsp-origami-mode t)
+  (lsp-headerline-breadcrumb-enable nil))
+
+(use-package lsp-origami :after lsp)
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-ivy :after lsp)
+
+(use-package web-mode :mode "\\.[tj]sx?$")
+
+(use-package emmet-mode 
+  :hook
+  (web-mode . emmet-mode)
+  (web-mode . (lambda () (setq-local emmet-expand-jsx-className? t))))
+
+(use-package rjsx-mode :hook (web-mode . rjsx-mode))
+
+(use-package json-mode
+  :ensure t
+  :mode "\\.json\\'"
+  :interpreter "json")
+
+(use-package typescript-mode
+  :mode "\\.tsx?\\'"
+  :hook (typescript-mode . lsp-deferred))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
