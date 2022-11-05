@@ -1,10 +1,10 @@
-(setq cstm/project-dirs '())
+(setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
 ;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
 (setq cstm/theme 'doom-one)
 
 (setq cstm/font-face "Menlo")
-(setq cstm/font-size 95)
+(setq cstm/font-size 123)
 
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
@@ -52,9 +52,9 @@
 
 (use-package no-littering)
 
-(setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
+(setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
-(setq auto-save-file-name-transforms `((".", "/home/tx/.emacs.d/emacs-autosaves" t)))
+(setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
 
 (setq-default create-lockfiles nil)
 
@@ -206,8 +206,8 @@
   :hook (lsp-mode . company-mode)
   :bind 
   (:map company-active-map ("<tab>" . company-complete-selection))
-  (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
   :custom
+  (company-tooltip-align-annotations t)
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
 
@@ -221,26 +221,9 @@
 (setq-default flycheck-disabled-checkers (append flycheck-disabled-checkers '(javascript-jshint json-jsonlist)))
 
 (flycheck-add-mode 'javascript-eslint 'web-mode)
+(flycheck-add-mode 'typescript-tslint 'web-mode)
 
 (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
-
-(use-package prettier-js
-  :custom
-  (prettier-js-args '(
-                      "--bracket-same-line" "false"
-                      "--allow-parens" "avoid"
-                      "--bracket-spacing" "false"
-                      "--use-tabs" "true"
-                      "--semi" "true"
-                      "--single-quote" "false"
-                      "--jsx-single-quote" "false"
-                      "--trailing-comma" "es5"
-                      "--tab-width" "1"
-                      "--print-width" "180"
-                      ))
-  :config
-  (add-hook 'web-mode-hook #'(lambda ()
-                               (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
 
 (use-package vterm
     :commands vterm
@@ -294,7 +277,6 @@
   :custom (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-ivy :after lsp)
-
 (use-package web-mode :mode "\\.[tj]sx?$")
 
 (use-package emmet-mode 

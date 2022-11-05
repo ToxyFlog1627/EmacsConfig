@@ -2,13 +2,13 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 * Config
 #+begin_src emacs-lisp
-  (setq cstm/project-dirs '())
+  (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
   ;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
   (setq cstm/theme 'doom-one)
-
+  
   (setq cstm/font-face "Menlo")
-  (setq cstm/font-size 95)
+  (setq cstm/font-size 123)
 #+end_src
 * OnStartup 
 #+begin_src emacs-lisp
@@ -82,11 +82,11 @@ Setting theme to dark, until package with other themes loads no to get blind.
 #+end_src
 file~
 #+begin_src emacs-lisp
-  (setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
+  (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 #+end_src
 #file#
 #+begin_src emacs-lisp
-  (setq auto-save-file-name-transforms `((".", "/home/tx/.emacs.d/emacs-autosaves" t)))
+  (setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
 #+end_src
 .#file
 #+begin_src emacs-lisp
@@ -138,11 +138,13 @@ file~
 #+end_src
 ** View Settings
 #+begin_src emacs-lisp
-  (scroll-bar-mode -1) ; Disable scrollbar
-  (tool-bar-mode   -1) ; Disable toolbar
-  (tooltip-mode    -1) ; Disable tooltip
-  (menu-bar-mode   -1) ; Diasble menubar
-  (set-fringe-mode  8) ; Padding
+  (scroll-bar-mode -1) ;; Disable scrollbar
+  (tool-bar-mode   -1) ;; Disable toolbar
+  (tooltip-mode    -1) ;; Disable tooltip
+  (menu-bar-mode   -1) ;; Diasble menubar
+  
+  ;; Padding
+  (set-fringe-mode  8) 
   (custom-set-faces `(fringe ((t (:background nil)))))
 #+end_src
 ** Font
@@ -281,8 +283,8 @@ Icons in dired
     :hook (lsp-mode . company-mode)
     :bind 
     (:map company-active-map ("<tab>" . company-complete-selection))
-    (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
     :custom
+    (company-tooltip-align-annotations t)
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
 
@@ -306,31 +308,11 @@ Disable default *JSLint*
 Enable live *ESLint* errors when in /web mode/
 #+begin_src emacs-lisp
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'typescript-tslint 'web-mode)
 #+end_src
 To use config from local node_modules
 #+begin_src emacs-lisp
   (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
-#+end_src
-** Formatting
-*** Prettier
-#+begin_src emacs-lisp
-  (use-package prettier-js
-    :custom
-    (prettier-js-args '(
-                        "--bracket-same-line" "false"
-                        "--allow-parens" "avoid"
-                        "--bracket-spacing" "false"
-                        "--use-tabs" "true"
-                        "--semi" "true"
-                        "--single-quote" "false"
-                        "--jsx-single-quote" "false"
-                        "--trailing-comma" "es5"
-                        "--tab-width" "1"
-                        "--print-width" "180"
-                        ))
-    :config
-    (add-hook 'web-mode-hook #'(lambda ()
-                                 (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
 #+end_src
 ** Vterm (terminal)
 #+begin_src emacs-lisp
