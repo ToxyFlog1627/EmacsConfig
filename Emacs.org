@@ -6,9 +6,11 @@
 
   ;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
   (setq cstm/theme 'doom-one)
-  
+
   (setq cstm/font-face "Menlo")
   (setq cstm/font-size 123)
+
+  (setq cstm/org-column-width 120)
 #+end_src
 * OnStartup 
 #+begin_src emacs-lisp
@@ -239,7 +241,7 @@ Icons in dired
           (org-level-6 . 1.0)
           (org-level-7 . 1.0)
           (org-level-8 . 1.0)))
-          (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face)))
+          (set-face-attribute (car face) nil :font cstm/font-face :weight 'regular :height (cdr face)))
       (dolist (template '(
           ("sh" . "src shell")
           ("el" . "src emacs-lisp")))
@@ -250,7 +252,7 @@ Icons in dired
        :custom (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
   (defun cstm/org-mode-visual-fill ()
-      (setq visual-fill-column-width 120
+      (setq visual-fill-column-width cstm/org-column-width
             visual-fill-column-center-text t)
       (visual-fill-column-mode 1))
 
@@ -308,7 +310,6 @@ Disable default *JSLint*
 Enable live *ESLint* errors when in /web mode/
 #+begin_src emacs-lisp
   (flycheck-add-mode 'javascript-eslint 'web-mode)
-  (flycheck-add-mode 'typescript-tslint 'web-mode)
 #+end_src
 To use config from local node_modules
 #+begin_src emacs-lisp

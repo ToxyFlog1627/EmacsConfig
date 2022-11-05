@@ -6,6 +6,8 @@
 (setq cstm/font-face "Menlo")
 (setq cstm/font-size 123)
 
+(setq cstm/org-column-width 120)
+
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
@@ -90,11 +92,13 @@
 (setq inhibit-startup-message t)
 (setq initial-scratch-message nil)
 
-(scroll-bar-mode -1) ; Disable scrollbar
-(tool-bar-mode   -1) ; Disable toolbar
-(tooltip-mode    -1) ; Disable tooltip
-(menu-bar-mode   -1) ; Diasble menubar
-(set-fringe-mode  8) ; Padding
+(scroll-bar-mode -1) ;; Disable scrollbar
+(tool-bar-mode   -1) ;; Disable toolbar
+(tooltip-mode    -1) ;; Disable tooltip
+(menu-bar-mode   -1) ;; Diasble menubar
+
+;; Padding
+(set-fringe-mode  8) 
 (custom-set-faces `(fringe ((t (:background nil)))))
 
 (set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
@@ -169,7 +173,7 @@
         (org-level-6 . 1.0)
         (org-level-7 . 1.0)
         (org-level-8 . 1.0)))
-        (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font cstm/font-face :weight 'regular :height (cdr face)))
     (dolist (template '(
         ("sh" . "src shell")
         ("el" . "src emacs-lisp")))
@@ -180,7 +184,7 @@
      :custom (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun cstm/org-mode-visual-fill ()
-    (setq visual-fill-column-width 120
+    (setq visual-fill-column-width cstm/org-column-width
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
@@ -221,9 +225,26 @@
 (setq-default flycheck-disabled-checkers (append flycheck-disabled-checkers '(javascript-jshint json-jsonlist)))
 
 (flycheck-add-mode 'javascript-eslint 'web-mode)
-(flycheck-add-mode 'typescript-tslint 'web-mode)
 
 (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
+
+(use-package prettier-js
+  :custom
+  (prettier-js-args '(
+                      "--bracket-same-line" "false"
+                      "--allow-parens" "avoid"
+                      "--bracket-spacing" "false"
+                      "--use-tabs" "true"
+                      "--semi" "true"
+                      "--single-quote" "false"
+                      "--jsx-single-quote" "false"
+                      "--trailing-comma" "es5"
+                      "--tab-width" "1"
+                      "--print-width" "180"
+                      ))
+  :config
+  (add-hook 'web-mode-hook #'(lambda ()
+                               (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
 
 (use-package vterm
     :commands vterm
@@ -277,6 +298,7 @@
   :custom (lsp-ui-doc-position 'bottom))
 
 (use-package lsp-ivy :after lsp)
+
 (use-package web-mode :mode "\\.[tj]sx?$")
 
 (use-package emmet-mode 
