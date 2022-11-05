@@ -6,6 +6,8 @@
 (setq cstm/font-face "Menlo")
 (setq cstm/font-size 95)
 
+(setq cstm/org-column-width 100)
+
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
@@ -90,11 +92,13 @@
 (setq inhibit-startup-message t)
 (setq initial-scratch-message nil)
 
-(scroll-bar-mode -1) ; Disable scrollbar
-(tool-bar-mode   -1) ; Disable toolbar
-(tooltip-mode    -1) ; Disable tooltip
-(menu-bar-mode   -1) ; Diasble menubar
-(set-fringe-mode  8) ; Padding
+(scroll-bar-mode -1) ;; Disable scrollbar
+(tool-bar-mode   -1) ;; Disable toolbar
+(tooltip-mode    -1) ;; Disable tooltip
+(menu-bar-mode   -1) ;; Diasble menubar
+
+;; Padding
+(set-fringe-mode  8)
 (custom-set-faces `(fringe ((t (:background nil)))))
 
 (set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
@@ -169,7 +173,7 @@
         (org-level-6 . 1.0)
         (org-level-7 . 1.0)
         (org-level-8 . 1.0)))
-        (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font cstm/font-face :weight 'regular :height (cdr face)))
     (dolist (template '(
         ("sh" . "src shell")
         ("el" . "src emacs-lisp")))
@@ -180,7 +184,7 @@
      :custom (org-bullets-bullet-list '("◉" "○" "●" "○" "●" "○" "●")))
 
 (defun cstm/org-mode-visual-fill ()
-    (setq visual-fill-column-width 120
+    (setq visual-fill-column-width cstm/org-column-width
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
 
