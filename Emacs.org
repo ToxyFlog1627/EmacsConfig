@@ -314,6 +314,27 @@ To use config from local node_modules
 #+begin_src emacs-lisp
   (use-package add-node-modules-path :config (add-hook 'flycheck-mode-hook 'add-node-modules-path))
 #+end_src
+** Formatting
+*** Prettier
+#+begin_src emacs-lisp
+  (use-package prettier-js
+    :custom
+    (prettier-js-args '(
+                        "--bracket-same-line" "false"
+                        "--allow-parens" "avoid"
+                        "--bracket-spacing" "false"
+                        "--use-tabs" "true"
+                        "--semi" "true"
+                        "--single-quote" "false"
+                        "--jsx-single-quote" "false"
+                        "--trailing-comma" "es5"
+                        "--tab-width" "1"
+                        "--print-width" "180"
+                        ))
+    :config
+    (add-hook 'web-mode-hook #'(lambda ()
+                                 (enable-minor-mode '("\\.jsx?\\'" . prettier-js-mode)))))
+#+end_src
 ** Vterm (terminal)
 #+begin_src emacs-lisp
   (use-package vterm
