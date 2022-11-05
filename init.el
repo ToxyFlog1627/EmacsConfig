@@ -1,9 +1,10 @@
-(setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
+(setq cstm/project-dirs '())
 
-(setq cstm/theme 'doom-one) ;; Other good themes: doom-moonlight, doom-snazzy, doom-spacegray
+;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
+(setq cstm/theme 'doom-one)
 
 (setq cstm/font-face "Menlo")
-(setq cstm/font-size 123)
+(setq cstm/font-size 95)
 
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
@@ -49,13 +50,11 @@
 
 (use-package diminish)
 
-(use-package no-littering
-  :custom (setq auto-save-file-name-transforms 
-                 `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
+(use-package no-littering)
 
-(setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
+(setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
 
-(setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
+(setq auto-save-file-name-transforms `((".", "/home/tx/.emacs.d/emacs-autosaves" t)))
 
 (setq-default create-lockfiles nil)
 
@@ -96,6 +95,7 @@
 (tooltip-mode    -1) ; Disable tooltip
 (menu-bar-mode   -1) ; Diasble menubar
 (set-fringe-mode  8) ; Padding
+(custom-set-faces `(fringe ((t (:background nil)))))
 
 (set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
 
