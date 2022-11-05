@@ -1,6 +1,7 @@
 (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
-(setq cstm/theme 'doom-one) ;; Other good themes: doom-moonlight, doom-snazzy, doom-spacegray
+;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
+(setq cstm/theme 'doom-one)
 
 (setq cstm/font-face "Menlo")
 (setq cstm/font-size 123)
@@ -49,9 +50,7 @@
 
 (use-package diminish)
 
-(use-package no-littering
-  :custom (setq auto-save-file-name-transforms 
-                `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
+(use-package no-littering)
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
@@ -96,6 +95,7 @@
 (tooltip-mode    -1) ; Disable tooltip
 (menu-bar-mode   -1) ; Diasble menubar
 (set-fringe-mode  8) ; Padding
+(custom-set-faces `(fringe ((t (:background nil)))))
 
 (set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
 
@@ -202,8 +202,8 @@
 (use-package origami) ;; TODO: bindings
 
 (use-package company
-  :after tide-mode
-  :hook (tide-mode . company-mode)
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
   :bind 
   (:map company-active-map ("<tab>" . company-complete-selection))
   :custom
@@ -257,6 +257,26 @@
   :after projectile
   :config (counsel-projectile-mode))
 
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init (setq lsp-keymap-prefix "C-c l")
+  :custom
+  (lsp-enable-file-watchers nil)
+  (lsp-enable-links nil)
+  (lsp-idle-delay 0.1)
+  (lsp-log-io nil)
+  (lsp-completion-provider :none)
+  (lsp-enable-which-key-integration t)
+  (lsp-origami-mode t)
+  (lsp-headerline-breadcrumb-enable nil))
+
+(use-package lsp-origami :after lsp)
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :custom (lsp-ui-doc-position 'bottom))
+
+(use-package lsp-ivy :after lsp)
 (use-package web-mode :mode "\\.[tj]sx?$")
 
 (use-package emmet-mode 
@@ -271,44 +291,9 @@
   :mode "\\.json\\'"
   :interpreter "json")
 
-(defun cstm/setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (tide-hl-identifier-mode +1))
-
-(use-package tide
-  :hook
-  ((before-save . tide-format-before-save)
-   (web-mode . cstm/setup-tide-mode))
-  :custom
-  (tide-user-preferences '(
-                         :includeCompletionsForModuleExports t
-                         :includeCompletionsWithInsertText t
-                         :quotePreference "single"))
-  (tide-format-options '(
-                         :indentSize 4
-                         :tabSize 4
-                         :insertSpaceAfterCommaDelimiter t
-                         :insertSpaceAfterSemicolonInForStatements nil
-                         :insertSpaceBeforeAndAfterBinaryOperators t
-                         :insertSpaceAfterConstructor t
-                         :insertSpaceAfterKeywordsInControlFlowStatements t
-                         :insertSpaceAfterFunctionKeywordForAnonymousFunctions t
-                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis nil
-                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets nil
-                         :insertSpaceAfterOpeningAndBeforeClosingNonemptyBraces t
-                         :insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces nil
-                         :insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces nil
-                         :insertSpaceAfterTypeAssertion nil
-                         :insertSpaceBeforeFunctionParenthesis t
-                         :placeOpenBraceOnNewLineForFunctions nil
-                         :placeOpenBraceOnNewLineForControlBlocks nil
-                         :insertSpaceBeforeTypeAnnotation t)))
-
 (use-package typescript-mode
-  :mode "\\.tsx?$"
-  :hook (typescript-mode . cstm/setup-tide-mode))
+  :mode "\\.tsx?\\'"
+  :hook (typescript-mode . lsp-deferred))
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
