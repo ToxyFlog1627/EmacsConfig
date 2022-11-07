@@ -13,6 +13,8 @@
 
 (load-theme 'wombat)
 
+(setq initial-major-mode 'text-mode)
+
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
