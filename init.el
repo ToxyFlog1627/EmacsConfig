@@ -1,4 +1,4 @@
-(setq cstm/project-dirs '())
+(setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
 ;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
 (setq cstm/theme 'doom-one)
@@ -58,7 +58,7 @@
 
 (use-package no-littering)
 
-(setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
+(setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
 (setq auto-save-default nil)
 
@@ -79,7 +79,8 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'dashboard-mode 'normal)
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit))
 
 (use-package evil-collection
   :after evil
@@ -87,9 +88,33 @@
 
 (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-(use-package general)
+(use-package general :after evil)
 
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+(general-create-definer cstm/keybinds
+  :keymaps '(normal insert visual emacs)
+  :prefix "SPC"
+  :global-prefix "C-SPC")
+
+(defun open-file (filename) (find-file (expand-file-name filename)))
+
+(cstm/keybinds
+ "o"   '(:ignore t :which-key "open")
+ "od"  '(dired :which-key "dired")
+ "om"  '(magit-status :which-key "magit")
+ "of"  '(counsel-find-file :which-key "file")
+ "oe"  '(:ignore t :which-key "emacs config")
+ "oeo" '((lambda () (interactive) (open-file "~/.emacs.d/Emacs.org")) :which-key "org")
+ "oee" '((lambda () (interactive) (open-file "~/.emacs.d/init.el")) :which-key "elisp")
+ "a"   '(:ignore t :which-key "actions")
+ "at"  '(counsel-load-theme :which-key "change theme")
+ "ap"  '(counsel-projectile-switch-project :which-key "switch project")
+ "aq"  '(:ignore t :which-key "quit")
+ "aqq" '(evil-quit-all :which-key "quit emacs")
+ "h"   '(:ignore t :which-key "help")
+ "hf"  '(counsel-describe-function :which-key "function")
+ "hc"  '(helpful-command :which-key "command")
+ "hv"  '(counsel-describe-variable :which-key "variable")
+ "hk"  '(helpful-key :which-key "key"))
 
 (custom-set-variables '(initial-frame-alist (quote ((fullscreen . maximized)))))
 
@@ -102,7 +127,7 @@
 (menu-bar-mode   -1) ;; Diasble menubar
 
 ;; Padding
-(set-fringe-mode  8)
+(set-fringe-mode 8) 
 (custom-set-faces `(fringe ((t (:background nil)))))
 
 (set-face-attribute 'default nil :font cstm/font-face :height cstm/font-size)
@@ -213,8 +238,8 @@
   :hook (lsp-mode . company-mode)
   :bind 
   (:map company-active-map ("<tab>" . company-complete-selection))
-  (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
   :custom
+  (company-tooltip-align-annotations t)
   (company-minimum-prefix-length 1)
   (company-idle-delay 0.0))
 

@@ -2,7 +2,7 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 * Config
 #+begin_src emacs-lisp
-  (setq cstm/project-dirs '())
+  (setq cstm/project-dirs '("~/Documents/Web" "~/Documents/Other"))
 
   ;; doom- moonlight snazzy sourcerer material nord-aurora nova old-home opera vibrant misterioso horizon
   (setq cstm/theme 'doom-one)
@@ -23,10 +23,10 @@ Setting theme to dark, until package with other themes loads no to get blind.
 #+begin_src emacs-lisp
   (load-theme 'wombat)
 #+end_src
-** Initial mode
-Open files as plain text by default
+** Default mode
+By default open files as plain text
 #+begin_src emacs-lisp
-  (setq initial-major-mode 'text-mode) 
+  (setq initial-major-mode 'text-mode)
 #+end_src
 ** Coding System
 #+begin_src emacs-lisp
@@ -93,7 +93,7 @@ Open files as plain text by default
 #+end_src
 file~
 #+begin_src emacs-lisp
-  (setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
+  (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 #+end_src
 #file#
 #+begin_src emacs-lisp
@@ -106,36 +106,62 @@ file~
 * Keybinding
 ** EVIL
 #+begin_src emacs-lisp
-    (use-package evil
-      :init
-      (setq evil-want-integration t)
-      (setq evil-want-C-u-scroll t)
-      (setq evil-want-keybinding nil)
-      (setq evil-want-C-i-jump nil)
-      (setq evil-split-window-below t)
-      (setq evil-vsplit-window-right t)
-      (setq evil-undo-system 'undo-redo)
-      :config
-      (evil-mode 1)
-      (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
-      (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-      (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
-      (evil-set-initial-state 'messages-buffer-mode 'normal)
-      (evil-set-initial-state 'dashboard-mode 'normal))
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-i-jump nil)
+    (setq evil-split-window-below t)
+    (setq evil-vsplit-window-right t)
+    (setq evil-undo-system 'undo-redo)
+    :config
+    (evil-mode 1)
+    (define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state) 
+    (evil-global-set-key 'motion "j" 'evil-next-visual-line)
+    (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+    (evil-set-initial-state 'messages-buffer-mode 'normal)
+    (evil-set-initial-state 'dashboard-mode 'normal)
+    (global-set-key (kbd "<escape>") 'keyboard-escape-quit))
 
-    (use-package evil-collection
-      :after evil
-      :config (evil-collection-init))
+  (use-package evil-collection
+    :after evil
+    :config (evil-collection-init))
 
-    (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
+  (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 #+end_src
 ** General (better keybinding definitions)
 #+begin_src emacs-lisp
-  (use-package general)
+  (use-package general :after evil)
 #+end_src
 ** Custom Keybindings
 #+begin_src emacs-lisp
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+  (general-create-definer cstm/keybinds
+    :keymaps '(normal insert visual emacs)
+    :prefix "SPC"
+    :global-prefix "C-SPC")
+
+  (defun open-file (filename) (find-file (expand-file-name filename)))
+
+  (cstm/keybinds
+   "o"   '(:ignore t :which-key "open")
+   "od"  '(dired :which-key "dired")
+   "om"  '(magit-status :which-key "magit")
+   "of"  '(counsel-find-file :which-key "file")
+   "oe"  '(:ignore t :which-key "emacs config")
+   "oeo" '((lambda () (interactive) (open-file "~/.emacs.d/Emacs.org")) :which-key "org")
+   "oee" '((lambda () (interactive) (open-file "~/.emacs.d/init.el")) :which-key "elisp")
+   "a"   '(:ignore t :which-key "actions")
+   "at"  '(counsel-load-theme :which-key "change theme")
+   "ap"  '(counsel-projectile-switch-project :which-key "switch project")
+   "aq"  '(:ignore t :which-key "quit")
+   "aqq" '(evil-quit-all :which-key "quit emacs")
+   "h"   '(:ignore t :which-key "help")
+   "hf"  '(counsel-describe-function :which-key "function")
+   "hc"  '(helpful-command :which-key "command")
+   "hv"  '(counsel-describe-variable :which-key "variable")
+   "hk"  '(helpful-key :which-key "key"))
+
 #+end_src
 * User Interface
 ** Maximize Window
@@ -155,7 +181,7 @@ file~
   (menu-bar-mode   -1) ;; Diasble menubar
 
   ;; Padding
-  (set-fringe-mode  8)
+  (set-fringe-mode 8) 
   (custom-set-faces `(fringe ((t (:background nil)))))
 #+end_src
 ** Font
@@ -293,8 +319,8 @@ Icons in dired
     :hook (lsp-mode . company-mode)
     :bind 
     (:map company-active-map ("<tab>" . company-complete-selection))
-    (:map lsp-mode-map ("<tab>" . company-indent-or-complete-common))
     :custom
+    (company-tooltip-align-annotations t)
     (company-minimum-prefix-length 1)
     (company-idle-delay 0.0))
 
