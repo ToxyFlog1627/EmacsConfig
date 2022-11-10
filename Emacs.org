@@ -10,7 +10,7 @@
   (setq cstm/font-face "Menlo")
   (setq cstm/font-size 95)
 
-  (setq cstm/org-column-width 100)
+  (setq cstm/org-column-width 150)
 #+end_src
 * OnStartup 
 #+begin_src emacs-lisp
@@ -22,6 +22,11 @@
 Setting theme to dark, until package with other themes loads no to get blind.
 #+begin_src emacs-lisp
   (load-theme 'wombat)
+#+end_src
+** Initial mode
+Open files as plain text by default
+#+begin_src emacs-lisp
+  (setq initial-major-mode 'text-mode) 
 #+end_src
 ** Coding System
 #+begin_src emacs-lisp
@@ -45,6 +50,10 @@ Setting theme to dark, until package with other themes loads no to get blind.
 #+begin_src emacs-lisp
   (when (eq system-type 'darwin) (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
   (setq byte-compile-warnings '(cl-functions))
+#+end_src
+** Use C-c C-v C-x
+#+begin_src emacs-lisp
+  (cua-mode t)
 #+end_src
 * Package System
 ** Use Package
@@ -88,7 +97,7 @@ file~
 #+end_src
 #file#
 #+begin_src emacs-lisp
-  (setq auto-save-file-name-transforms `((".", "/home/tx/.emacs.d/emacs-autosaves" t)))
+  (setq auto-save-default nil)
 #+end_src
 .#file
 #+begin_src emacs-lisp
@@ -202,8 +211,7 @@ file~
       :commands (dired dired-jump)
       :bind (("C-x C-j" . dired-jump))
       :custom
-      ((dired-listing-switches "-alh --group-directories-first")
-       (insert-directory-program "gls" dired-use-ls-dired))
+      (dired-listing-switches "-alh --group-directories-first")
       :config
       (evil-collection-define-key 'normal 'dired-mode-map
         "h" 'dired-single-up-directory
@@ -428,6 +436,10 @@ To use config from local node_modules
   (use-package typescript-mode
     :mode "\\.tsx?\\'"
     :hook (typescript-mode . lsp-deferred))
+#+end_src
+*** C/C++
+#+begin_src emacs-lisp
+  (setq c-basic-offset 4)
 #+end_src
 * Help
 ** Helpful

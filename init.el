@@ -6,12 +6,14 @@
 (setq cstm/font-face "Menlo")
 (setq cstm/font-size 95)
 
-(setq cstm/org-column-width 100)
+(setq cstm/org-column-width 150)
 
 ;; Increase memory size to 75MB to decrease startup time
 (setq gc-cons-threshold (* 75 1024 1024))
 
 (load-theme 'wombat)
+
+(setq initial-major-mode 'text-mode)
 
 (prefer-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
@@ -27,6 +29,8 @@
 
 (when (eq system-type 'darwin) (customize-set-variable 'native-comp-driver-options '("-Wl,-w")))
 (setq byte-compile-warnings '(cl-functions))
+
+(cua-mode t)
 
 ;; Initialize package sources
 (require 'package)
@@ -56,7 +60,7 @@
 
 (setq backup-directory-alist '(("." . "/home/tx/.emacs.d/emacs-backups")))
 
-(setq auto-save-file-name-transforms `((".", "/home/tx/.emacs.d/emacs-autosaves" t)))
+(setq auto-save-default nil)
 
 (setq-default create-lockfiles nil)
 
@@ -139,8 +143,7 @@
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
   :custom
-  ((dired-listing-switches "-alh --group-directories-first")
-   (insert-directory-program "gls" dired-use-ls-dired))
+  (dired-listing-switches "-alh --group-directories-first")
   :config
   (evil-collection-define-key 'normal 'dired-mode-map
     "h" 'dired-single-up-directory
@@ -316,6 +319,8 @@
 (use-package typescript-mode
   :mode "\\.tsx?\\'"
   :hook (typescript-mode . lsp-deferred))
+
+(setq c-basic-offset 4)
 
 (use-package helpful
   :commands (helpful-callable helpful-variable helpful-command helpful-key)
