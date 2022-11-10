@@ -58,7 +58,7 @@
 
 (setq backup-directory-alist '(("." . "~/.emacs.d/emacs-backups")))
 
-(setq auto-save-file-name-transforms `((".", "~/.emacs.d/emacs-autosaves" t)))
+(setq auto-save-default nil)
 
 (setq-default create-lockfiles nil)
 
@@ -77,7 +77,8 @@
   (evil-global-set-key 'motion "j" 'evil-next-visual-line)
   (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
   (evil-set-initial-state 'messages-buffer-mode 'normal)
-  (evil-set-initial-state 'dashboard-mode 'normal))
+  (evil-set-initial-state 'dashboard-mode 'normal)
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit))
 
 (use-package evil-collection
   :after evil
@@ -85,9 +86,33 @@
 
 (use-package evil-nerd-commenter :bind ("M-/" . evilnc-comment-or-uncomment-lines))
 
-(use-package general)
+(use-package general :after evil)
 
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit) ;; ESC = C-g
+(general-create-definer cstm/keybinds
+  :keymaps '(normal insert visual emacs)
+  :prefix "SPC"
+  :global-prefix "C-SPC")
+
+(defun open-file (filename) (find-file (expand-file-name filename)))
+
+(cstm/keybinds
+ "o"   '(:ignore t :which-key "open")
+ "od"  '(dired :which-key "dired")
+ "om"  '(magit-status :which-key "magit")
+ "of"  '(counsel-find-file :which-key "file")
+ "oe"  '(:ignore t :which-key "emacs config")
+ "oeo" '((lambda () (interactive) (open-file "~/.emacs.d/Emacs.org")) :which-key "org")
+ "oee" '((lambda () (interactive) (open-file "~/.emacs.d/init.el")) :which-key "elisp")
+ "a"   '(:ignore t :which-key "actions")
+ "at"  '(counsel-load-theme :which-key "change theme")
+ "ap"  '(counsel-projectile-switch-project :which-key "switch project")
+ "aq"  '(:ignore t :which-key "quit")
+ "aqq" '(evil-quit-all :which-key "quit emacs")
+ "h"   '(:ignore t :which-key "help")
+ "hf"  '(counsel-describe-function :which-key "function")
+ "hc"  '(helpful-command :which-key "command")
+ "hv"  '(counsel-describe-variable :which-key "variable")
+ "hk"  '(helpful-key :which-key "key"))
 
 (custom-set-variables '(initial-frame-alist (quote ((fullscreen . maximized)))))
 
